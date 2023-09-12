@@ -4,3 +4,4 @@ set(SOURCES src/main.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} PUBLIC KrokodilLanguage)
+target_include_directories(${PROJECT_NAME} PUBLIC include/)
