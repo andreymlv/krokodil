@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -xe
+
+CC=clang CXX=clang++ cmake -B build -S .
+
+# https://github.com/mstorsjo/msvc-wine
+PATH=~/my_msvc/opt/msvc/bin/x64:$PATH CC=cl CXX=cl \
+	cmake -B build-msvc -S . -DCMAKE_SYSTEM_NAME=Windows
