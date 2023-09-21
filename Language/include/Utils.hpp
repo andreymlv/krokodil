@@ -23,7 +23,7 @@ inline void compile(std::string lines) {
   Scanner scanner(lines);
   auto tokens = scanner.scan_tokens();
   for (const auto &token : tokens) {
-    std::cout << token.to_string() << std::endl;
+    std::cout << token << std::endl;
   }
 }
 

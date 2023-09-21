@@ -18,13 +18,7 @@ class Token {
         literal(std::move(literal)),
         line(line) {}
 
-  std::string to_string() const {
-    std::stringstream stream;
-    stream << magic_enum::enum_name(type) << " " << lexeme << " ";
-    std::visit([&stream](auto&& arg) { stream << arg; },
-               literal.value_or("null"));
-    return stream.str();
-  }
+  friend std::ostream& operator<<(std::ostream& os, const Token& token);
 
  private:
   TokenType type;
@@ -32,4 +26,11 @@ class Token {
   Literal literal;
   int line;
 };
+
+std::ostream& operator<<(std::ostream& os, const Token& t) {
+  os << magic_enum::enum_name(t.type) << " " << t.lexeme << " ";
+  std::visit([&os](auto&& arg) { os << arg; }, t.literal.value_or("null"));
+  return os;
+}
+
 }  // namespace Krokodil

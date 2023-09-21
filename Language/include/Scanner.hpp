@@ -24,7 +24,7 @@ class Scanner {
       scanToken();
     }
 
-    tokens.emplace_back(TokenType::EndOfFile, "", std::nullopt, line);
+    tokens.emplace_back(TokenType::EndOfFile, "EOF", std::nullopt, line);
     return tokens;
   }
 
@@ -60,9 +60,9 @@ class Scanner {
     }
 
     if (isAtEnd()) {
-      // std::cerr << "[line " << line << "] Error"
-      //           << ": "
-      //           << "Unterminated string." << std::endl;
+      std::cerr << "[line " << line << "] Error"
+                << ": "
+                << "Unterminated string." << std::endl;
       return;
     }
 
@@ -91,10 +91,7 @@ class Scanner {
     auto str = source.substr(start, current - start);
     auto [ptr, ec] =
         std::from_chars(str.data(), str.data() + str.size(), result);
-    if (ec == std::errc())
-      std::cerr << "Result: " << result << ", ptr -> " << std::quoted(ptr)
-                << '\n';
-    else if (ec == std::errc::invalid_argument)
+    if (ec == std::errc::invalid_argument)
       std::cerr << "This is not a number.\n";
     else if (ec == std::errc::result_out_of_range)
       std::cerr << "This number is larger than an int.\n";
@@ -169,7 +166,22 @@ class Scanner {
         addToken(match('=') ? TokenType::BANG_EQUAL : TokenType::BANG);
         break;
       case '=':
-        addToken(match('=') ? TokenType::EQUAL_EQUAL : TokenType::EQUAL);
+        if (match('=')) {
+          addToken(TokenType::EQUAL_EQUAL);
+        } else {
+          std::cerr << "[line " << line << "] Error"
+                    << ": "
+                    << "Unexpected character." << std::endl;
+        }
+        break;
+      case ':':
+        if (match('=')) {
+          addToken(TokenType::EQUAL);
+        } else {
+          std::cerr << "[line " << line << "] Error"
+                    << ": "
+                    << "Unexpected character." << std::endl;
+        }
         break;
       case '<':
         addToken(match('=') ? TokenType::LESS_EQUAL : TokenType::LESS);
@@ -186,9 +198,9 @@ class Scanner {
         } else if (isalpha(c)) {
           identifier();
         } else {
-          // std::cerr << "[line " << line << "] Error"
-          //           << ": "
-          //           << "Unexpected character." << std::endl;
+          std::cerr << "[line " << line << "] Error"
+                    << ": "
+                    << "Unexpected character." << std::endl;
         }
         break;
     }
@@ -206,7 +218,7 @@ class Scanner {
       {"return", TokenType::RETURN}, {"super", TokenType::SUPER},
       {"this", TokenType::THIS},     {"true", TokenType::TRUE},
       {"var", TokenType::VAR},       {"while", TokenType::WHILE},
-      {"begin", TokenType::BEGIN},   {"end", TokenType::END},
+      {"Begin", TokenType::BEGIN},   {"End", TokenType::END},
   };
   int start = 0;
   int current = 0;
