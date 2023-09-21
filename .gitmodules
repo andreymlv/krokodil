@@ -1,3 +1,6 @@
 [submodule "deps/glfw"]
 	path = deps/glfw
 	url = https://github.com/glfw/glfw.git
+[submodule "deps/magic_enum"]
+	path = deps/magic_enum
+	url = https://github.com/Neargye/magic_enum.git

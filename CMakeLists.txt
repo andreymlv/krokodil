@@ -5,6 +5,7 @@ project(krokodil VERSION 0.0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
+add_subdirectory(deps/magic_enum)
 add_subdirectory(Language)
 add_subdirectory(CLI)
 
