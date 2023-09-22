@@ -19,12 +19,15 @@ inline std::string read_all(const std::string &path) {
   return lines.str();
 }
 
-inline void compile(std::string lines) {
+inline std::string compile(std::string lines) {
   Scanner scanner(lines);
   auto tokens = scanner.scan_tokens();
+  std::stringstream stream;
+  stream << scanner.status_log.str();
   for (const auto &token : tokens) {
-    std::cout << token << std::endl;
+    stream << token << std::endl;
   }
+  return stream.str();
 }
 
 }  // namespace Krokodil

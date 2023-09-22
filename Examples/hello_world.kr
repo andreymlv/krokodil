@@ -1,0 +1,3 @@
+Begin
+  print "Hello, World!\n";
+End

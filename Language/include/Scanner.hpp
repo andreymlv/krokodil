@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <map>
 #include <memory>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -15,6 +16,8 @@ namespace Krokodil {
 
 class Scanner {
  public:
+  std::stringstream status_log;
+
   explicit Scanner(std::string source) : source(std::move(source)) {}
 
   std::vector<Token> scan_tokens() {
@@ -54,15 +57,16 @@ class Scanner {
   }
 
   void string() {
+    auto start_line = line;
     while (peek() != '"' && !isAtEnd()) {
       if (peek() == '\n') line++;
       advance();
     }
 
     if (isAtEnd()) {
-      std::cerr << "[line " << line << "] Error"
-                << ": "
-                << "Unterminated string." << std::endl;
+      status_log << "[line " << start_line << ":" << line << "] Error"
+                 << ": "
+                 << "Unterminated string." << std::endl;
       return;
     }
 
@@ -92,9 +96,15 @@ class Scanner {
     auto [ptr, ec] =
         std::from_chars(str.data(), str.data() + str.size(), result);
     if (ec == std::errc::invalid_argument)
-      std::cerr << "This is not a number.\n";
+      status_log << "[line " << line << "] Error"
+                 << ": "
+                    "This is not a number."
+                 << std::endl;
     else if (ec == std::errc::result_out_of_range)
-      std::cerr << "This number is larger than an int.\n";
+      status_log << "[line " << line << "] Error"
+                 << ": "
+                    "This number is larger than an int."
+                 << std::endl;
     addToken(TokenType::NUMBER, result);
   }
 
@@ -169,18 +179,18 @@ class Scanner {
         if (match('=')) {
           addToken(TokenType::EQUAL_EQUAL);
         } else {
-          std::cerr << "[line " << line << "] Error"
-                    << ": "
-                    << "Unexpected character." << std::endl;
+          status_log << "[line " << line << "] Error"
+                     << ": "
+                     << "Unexpected character." << std::endl;
         }
         break;
       case ':':
         if (match('=')) {
           addToken(TokenType::EQUAL);
         } else {
-          std::cerr << "[line " << line << "] Error"
-                    << ": "
-                    << "Unexpected character." << std::endl;
+          status_log << "[line " << line << "] Error"
+                     << ": "
+                     << "Unexpected character." << std::endl;
         }
         break;
       case '<':
@@ -198,9 +208,9 @@ class Scanner {
         } else if (isalpha(c)) {
           identifier();
         } else {
-          std::cerr << "[line " << line << "] Error"
-                    << ": "
-                    << "Unexpected character." << std::endl;
+          status_log << "[line " << line << "] Error"
+                     << ": "
+                     << "Unexpected character." << std::endl;
         }
         break;
     }

@@ -20,11 +20,12 @@
 
 namespace {
 
-static std::string path;
 static std::string source_code =
     "Begin\n"
     "\tprint \"Hello, World\\n\"\n"
     "End";
+
+static std::string status_log = "Log will be here";
 
 static void glfw_error_callback(int error, const char* description) {
   fprintf(stderr, "GLFW Error %d: %s\n", error, description);
@@ -35,13 +36,8 @@ static void drop_callback(GLFWwindow* window, int count, const char** paths) {
     return;
   }
   puts(paths[0]);
-  path = paths[0];
-  std::ifstream stream(path);
-  source_code.clear();
-  std::string temp;
-  while (std::getline(stream, temp)) {
-    source_code += temp + '\n';
-  }
+  source_code = Krokodil::read_all(paths[0]);
+  status_log = Krokodil::compile(source_code);
 }
 
 }  // namespace
@@ -118,6 +114,7 @@ int main(int, char**) {
     ImGui::SetNextWindowPos(ImVec2(0, windowHeight / 2));
     ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight / 2));
     ImGui::Begin("Compilation status");
+    ImGui::Text("%s", status_log.c_str());
     ImGui::End();
 
     ImGui::Render();
