@@ -20,10 +20,7 @@
 
 namespace {
 
-static std::string source_code =
-    "Begin\n"
-    "\tprint \"Hello, World\\n\"\n"
-    "End";
+static std::string source_code = "Drag and drop source code file";
 
 static std::string status_log = "Log will be here";
 

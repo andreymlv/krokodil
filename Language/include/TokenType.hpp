@@ -3,19 +3,23 @@
 namespace Krokodil {
 enum class TokenType {
   // Single-character tokens.
-  LEFT_PAREN,
-  RIGHT_PAREN,
-  LEFT_BRACE,
-  RIGHT_BRACE,
   COMMA,
-  DOT,
+  LEFT_BRACE,
+  LEFT_PAREN,
   MINUS,
   PLUS,
+  RIGHT_BRACE,
+  RIGHT_PAREN,
   SEMICOLON,
+  SHIFT_LEFT,
+  SHIFT_RIGHT,
+  AMPERSAND,
+  VERTICAL_BAR,
   SLASH,
   STAR,
 
   // One or two character tokens.
+  AND,
   BANG,
   BANG_EQUAL,
   EQUAL,
@@ -24,31 +28,26 @@ enum class TokenType {
   GREATER_EQUAL,
   LESS,
   LESS_EQUAL,
+  OR,
 
   // Literals.
   IDENTIFIER,
-  STRING,
   NUMBER,
+  STRING,
 
   // Keywords.
-  AND,
-  CLASS,
+  BEGIN,
   ELSE,
+  END,
   FALSE,
-  FUN,
   FOR,
+  FUN,
   IF,
-  NIL,
-  OR,
   PRINT,
   RETURN,
-  SUPER,
-  THIS,
   TRUE,
-  VAR,
+  TYPE,
   WHILE,
-  BEGIN,
-  END,
 
   EndOfFile,
 };

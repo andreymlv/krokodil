@@ -1,234 +1,133 @@
 #pragma once
 
-#include <charconv>
-#include <iomanip>
-#include <map>
-#include <memory>
 #include <sstream>
-#include <stdexcept>
-#include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "Token.hpp"
-#include "Utils.hpp"
 
 namespace Krokodil {
 
+/**
+ * @brief Tokenizer (lexical analysis).
+ *
+ * Can be implemented with regular expressions or with manual string scanning.
+ */
 class Scanner {
  public:
   std::stringstream status_log;
+  bool had_error = false;
 
-  explicit Scanner(std::string source) : source(std::move(source)) {}
+  /**
+   * @brief Ctor.
+   *
+   * @param[in] source Source code.
+   */
+  explicit Scanner(std::string source);
 
-  std::vector<Token> scan_tokens() {
-    while (!isAtEnd()) {
-      // We are at the beginning of the next lexeme.
-      start = current;
-      scanToken();
-    }
-
-    tokens.emplace_back(TokenType::EndOfFile, "EOF", std::nullopt, line);
-    return tokens;
-  }
+  /**
+   * @brief Scans the input source code and tokenizes it.
+   *
+   * @return A vector of tokens representing the scanned input source code.
+   */
+  std::vector<Token> scan_tokens();
 
  protected:
-  bool isAtEnd() { return current >= source.length(); }
+  /**
+   * @brief Checks if the current position is at or beyond the end of the
+   * source.
+   *
+   * @return Returns true if the current position is at or beyond the end of the
+   * source, otherwise returns false.
+   */
+  bool isAtEnd();
 
-  char advance() { return source.at(current++); }
+  /**
+   * @brief Advances to the next character in the source.
+   *
+   * @return Returns the character at the current position before it is
+   * incremented.
+   * @throws `std::out_of_range` if the current position is out of bounds of the
+   * source.
+   */
+  char advance();
 
-  void addToken(TokenType type) { addToken(type, std::nullopt); }
+  /**
+   * @brief Adds a token to the list of tokens.
+   *
+   * @param[in] type The type of the token to be added.
+   * @param[in] literal The literal value of the token to be added.
+   */
+  void addToken(TokenType type, Literal literal);
 
-  void addToken(TokenType type, Literal literal) {
-    auto text = source.substr(start, current - start);
-    tokens.emplace_back(type, text, literal, line);
-  }
+  /**
+   * @brief Adds a token to the list of tokens without a literal value.
+   *
+   * @param[in] type The type of the token to be added.
+   */
+  void addToken(TokenType type);
 
-  bool match(char expected) {
-    if (isAtEnd()) return false;
-    if (source.at(current) != expected) return false;
+  /**
+   * @brief Checks if the current character in the source matches the expected
+   * character.
+   *
+   * @param[in] expected The character we expect to find at the current position
+   * in the source.
+   * @return Returns true if the current character matches the expected
+   * character, otherwise returns false.
+   */
+  bool match(char expected);
 
-    current++;
-    return true;
-  }
+  /**
+   * @brief Peeks at the current character in the source without advancing.
+   *
+   * @return Returns the character at the current position in the source, or a
+   * null character if we are at the end of the source.
+   */
+  char peek();
 
-  char peek() {
-    if (isAtEnd()) return '\0';
-    return source.at(current);
-  }
+  /**
+   * @brief Processes a string in the source.
+   *
+   */
+  void string();
 
-  void string() {
-    auto start_line = line;
-    while (peek() != '"' && !isAtEnd()) {
-      if (peek() == '\n') line++;
-      advance();
-    }
+  /**
+   * @brief Peeks at the next character in the source without advancing.
+   *
+   * @return Returns the character at the next position in the source, or a null
+   * character if we are at or near the end of the source.
+   */
+  char peekNext();
 
-    if (isAtEnd()) {
-      status_log << "[line " << start_line << ":" << line << "] Error"
-                 << ": "
-                 << "Unterminated string." << std::endl;
-      return;
-    }
+  /**
+   * @brief Processes a number in the source.
+   *
+   */
+  void number();
 
-    advance();
+  /**
+   * @brief Processes an identifier in the source code.
+   *
+   */
+  void identifier();
 
-    auto value = source.substr(start + 1, current - start - 2);
-    addToken(TokenType::STRING, value);
-  }
-
-  char peekNext() {
-    if (current + 1 >= source.length()) return '\0';
-    return source.at(current + 1);
-  }
-
-  void number() {
-    while (isdigit(peek())) advance();
-
-    // Look for a fractional part.
-    if (peek() == '.' && isdigit(peekNext())) {
-      // Consume the "."
-      advance();
-
-      while (isdigit(peek())) advance();
-    }
-    float result{};
-    auto str = source.substr(start, current - start);
-    auto [ptr, ec] =
-        std::from_chars(str.data(), str.data() + str.size(), result);
-    if (ec == std::errc::invalid_argument)
-      status_log << "[line " << line << "] Error"
-                 << ": "
-                    "This is not a number."
-                 << std::endl;
-    else if (ec == std::errc::result_out_of_range)
-      status_log << "[line " << line << "] Error"
-                 << ": "
-                    "This number is larger than an int."
-                 << std::endl;
-    addToken(TokenType::NUMBER, result);
-  }
-
-  void identifier() {
-    while (isalnum(peek())) advance();
-
-    std::string text = source.substr(start, current - start);
-
-    TokenType type;
-    try {
-      type = keywords.at(text);
-    } catch (const std::out_of_range& e) {
-      type = TokenType::IDENTIFIER;
-    }
-    addToken(type);
-  }
-
-  void scanToken() {
-    auto c = advance();
-    switch (c) {
-      case ' ':
-        break;
-      case '\r':
-        break;
-      case '\t':
-        break;
-      case '\n':
-        line++;
-        break;
-      case '(':
-        addToken(TokenType::LEFT_PAREN);
-        break;
-      case ')':
-        addToken(TokenType::RIGHT_PAREN);
-        break;
-      case '{':
-        addToken(TokenType::LEFT_BRACE);
-        break;
-      case '}':
-        addToken(TokenType::RIGHT_BRACE);
-        break;
-      case ',':
-        addToken(TokenType::COMMA);
-        break;
-      case '.':
-        addToken(TokenType::DOT);
-        break;
-      case '-':
-        addToken(TokenType::MINUS);
-        break;
-      case '+':
-        addToken(TokenType::PLUS);
-        break;
-      case ';':
-        addToken(TokenType::SEMICOLON);
-        break;
-      case '*':
-        addToken(TokenType::STAR);
-        break;
-      case '/':
-        if (match('/')) {
-          // A comment goes until the end of the line.
-          while (peek() != '\n' && !isAtEnd()) advance();
-        } else {
-          addToken(TokenType::SLASH);
-        }
-        break;
-      case '!':
-        addToken(match('=') ? TokenType::BANG_EQUAL : TokenType::BANG);
-        break;
-      case '=':
-        if (match('=')) {
-          addToken(TokenType::EQUAL_EQUAL);
-        } else {
-          status_log << "[line " << line << "] Error"
-                     << ": "
-                     << "Unexpected character." << std::endl;
-        }
-        break;
-      case ':':
-        if (match('=')) {
-          addToken(TokenType::EQUAL);
-        } else {
-          status_log << "[line " << line << "] Error"
-                     << ": "
-                     << "Unexpected character." << std::endl;
-        }
-        break;
-      case '<':
-        addToken(match('=') ? TokenType::LESS_EQUAL : TokenType::LESS);
-        break;
-      case '>':
-        addToken(match('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER);
-        break;
-      case '"':
-        string();
-        break;
-      default:
-        if (isdigit(c)) {
-          number();
-        } else if (isalpha(c)) {
-          identifier();
-        } else {
-          status_log << "[line " << line << "] Error"
-                     << ": "
-                     << "Unexpected character." << std::endl;
-        }
-        break;
-    }
-  }
+  /**
+   * @brief Scans a token in the source code and adds it to the token list.
+   *
+   */
+  void scanToken();
 
  private:
   std::string source;
   std::vector<Token> tokens;
-  std::map<std::string, TokenType> keywords{
-      {"and", TokenType::AND},       {"class", TokenType::CLASS},
-      {"else", TokenType::ELSE},     {"false", TokenType::FALSE},
+  std::unordered_map<std::string, TokenType> keywords{
+      {"else", TokenType::ELSE},     {"False", TokenType::FALSE},
       {"for", TokenType::FOR},       {"fun", TokenType::FUN},
-      {"if", TokenType::IF},         {"nil", TokenType::NIL},
-      {"or", TokenType::OR},         {"print", TokenType::PRINT},
-      {"return", TokenType::RETURN}, {"super", TokenType::SUPER},
-      {"this", TokenType::THIS},     {"true", TokenType::TRUE},
-      {"var", TokenType::VAR},       {"while", TokenType::WHILE},
-      {"Begin", TokenType::BEGIN},   {"End", TokenType::END},
+      {"if", TokenType::IF},         {"print", TokenType::PRINT},
+      {"return", TokenType::RETURN}, {"True", TokenType::TRUE},
+      {"while", TokenType::WHILE},   {"Begin", TokenType::BEGIN},
+      {"End", TokenType::END},
   };
   int start = 0;
   int current = 0;
