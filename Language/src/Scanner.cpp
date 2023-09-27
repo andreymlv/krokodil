@@ -1,6 +1,10 @@
 #include "Scanner.hpp"
 
 #include <charconv>
+#include <cstring>
+#include <optional>
+
+#include "Utils.hpp"
 
 namespace Krokodil {
 
@@ -77,23 +81,31 @@ void Scanner::number() {
 
     while (isdigit(peek())) advance();
   }
-  float result{};
   auto str = source.substr(start, current - start);
-  auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
-  if (ec == std::errc::invalid_argument) {
-    status_log << "[line " << line << "] Error"
-               << ": "
-                  "This is not a number."
-               << std::endl;
-    had_error = true;
-  } else if (ec == std::errc::result_out_of_range) {
-    status_log << "[line " << line << "] Error"
-               << ": "
-                  "This number is larger than an int."
-               << std::endl;
-    had_error = true;
+  bool error = false;
+
+  {
+    auto result = to_int(str);
+    if (!result.has_value()) {
+      error = true;
+    } else {
+      addToken(TokenType::NUMBER, result);
+      return;
+    }
   }
-  addToken(TokenType::NUMBER, result);
+
+  {
+    auto result = to_float(str);
+    if (!result.has_value() && error) {
+      status_log << "[line " << line << "] Error"
+                 << ": "
+                 << "Unexpected number." << std::endl;
+      had_error = true;
+    } else {
+      addToken(TokenType::NUMBER, result);
+      return;
+    }
+  }
 }
 
 void Scanner::identifier() {

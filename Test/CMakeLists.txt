@@ -12,14 +12,15 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 add_executable(
-  tokenizer
-  tokenizer.cpp
+  ${PROJECT_NAME}
+  tests.cpp
 )
 target_link_libraries(
-  tokenizer
+  ${PROJECT_NAME}
   GTest::gtest_main
+  nlohmann_json::nlohmann_json
   KrokodilLanguage
 )
 
 include(GoogleTest)
-gtest_discover_tests(tokenizer)
+gtest_discover_tests(${PROJECT_NAME})

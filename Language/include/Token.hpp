@@ -9,7 +9,7 @@
 
 namespace Krokodil {
 
-using Literal = std::optional<std::variant<float, std::string>>;
+using Literal = std::optional<std::variant<float, int, std::string>>;
 
 bool compare(const Literal& lhs, const Literal& rhs);
 

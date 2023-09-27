@@ -30,7 +30,7 @@ bool compare(const Literal& lhs, const Literal& rhs) {
 
   // Case 3: Both have a value
   return std::visit(
-      [](auto&& arg1, auto&& arg2) -> bool {
+      [](auto&& arg1, auto&& arg2) {
         using T = std::decay_t<decltype(arg1)>;
         using G = std::decay_t<decltype(arg2)>;
         if constexpr (std::is_same_v<T, G>) {
