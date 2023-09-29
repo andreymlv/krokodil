@@ -11,13 +11,13 @@ Token::Token(TokenType type, std::string lexeme, Literal literal, int line)
       literal(std::move(literal)),
       line(line) {}
 
-std::ostream& operator<<(std::ostream& os, const Token& t) {
+auto operator<<(std::ostream& os, const Token& t) -> std::ostream& {
   os << magic_enum::enum_name(t.type) << " " << t.lexeme << " ";
   std::visit([&os](auto&& arg) { os << arg; }, t.literal.value_or("null"));
   return os;
 }
 
-bool compare(const Literal& lhs, const Literal& rhs) {
+auto compare(const Literal& lhs, const Literal& rhs) -> bool {
   // Case 1: Neither has a value
   if (!lhs && !rhs) {
     return true;
@@ -41,9 +41,9 @@ bool compare(const Literal& lhs, const Literal& rhs) {
       *lhs, *rhs);
 }
 
-bool Token::operator!=(const Token& rhs) const { return !(*this == rhs); }
+auto Token::operator!=(const Token& rhs) const -> bool { return !(*this == rhs); }
 
-bool Token::operator==(const Token& rhs) const {
+auto Token::operator==(const Token& rhs) const -> bool {
   return type == rhs.type && lexeme == rhs.lexeme &&
          compare(literal, rhs.literal) && line == rhs.line;
 }

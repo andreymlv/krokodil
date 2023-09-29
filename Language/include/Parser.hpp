@@ -19,54 +19,69 @@ class Parser {
   std::stringstream status_log;
   bool had_error = false;
 
-  explicit Parser(std::vector<Token> tokens) : tokens(std::move(tokens)) {
-    if (tokens.empty()) {
-      lookahead = std::nullopt;
-    } else {
-      lookahead = tokens.at(0);
-    }
-  }
+  explicit Parser(std::vector<Token> tokens)
+      : tokens(std::move(tokens)), token(nextToken()) {}
 
-  nlohmann::json program() {
+  auto program() -> nlohmann::json {
     return {
-        {"type", "Program"},
-        {"body", numeric_literal()},
+        declaration(), block(),
+        // print(),
     };
   }
 
-  nlohmann::json numeric_literal() {
-    auto token = eat(TokenType::NUMBER);
-    if (!token.has_value()) {
-      status_log << "Error: Expected number." << std::endl;
-      had_error = true;
+  auto accept(TokenType type) -> bool {
+    if (token.value().type == type) {
+      token = nextToken();
+      return true;
     }
-    return {
-        {"type", "numeric_literal"},
-        {"value", std::get<int>(token.value().literal.value())},
-    };
+    return false;
+  }
+
+  auto expect(TokenType type) -> bool {
+    if (accept(type)) {
+      return true;
+    }
+    return false;
+  }
+
+  auto declaration() -> nlohmann::json {
+    nlohmann::json result;
+    if (accept(TokenType::IDENTIFIER)) {
+      result.emplace_back("");
+      do {
+        expect(TokenType::IDENTIFIER);
+        expect(TokenType::EQUAL);
+        expect(TokenType::NUMBER);
+      } while (accept(TokenType::COMMA));
+    }
+    return {};
+  }
+
+  auto block() -> nlohmann::json {
+    if (accept(TokenType::BEGIN)) {
+      do {
+      } while (accept(TokenType::COMMA));
+      expect(TokenType::SEMICOLON);
+      expect(TokenType::END);
+    }
+    return {};
   }
 
  private:
-  std::optional<Token> eat(TokenType type) {
-    if (!lookahead.has_value()) {
+  auto nextToken() -> std::optional<Token> {
+    std::optional<Token> current;
+    try {
+      current = tokens.at(index);
+    } catch (const std::out_of_range& e) {
       return std::nullopt;
     }
-    if (isAtEnd()) {
-      return std::nullopt;
-    }
-    lookahead = tokens.at(current);
-    if (lookahead.value().type != type) {
-      return std::nullopt;
-    }
-    current += 1;
-    return token;
+    index++;
+    return current;
   }
 
-  bool isAtEnd() const { return current == tokens.size(); }
-
-  int current = 0;
   std::vector<Token> tokens;
-  std::optional<Token> lookahead;
+  std::optional<Token> token;
+  int index = 0;
 };
 
 }  // namespace Krokodil

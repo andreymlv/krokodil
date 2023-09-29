@@ -10,7 +10,7 @@ namespace Krokodil {
 
 Scanner::Scanner(std::string source) : source(std::move(source)) {}
 
-std::vector<Token> Scanner::scan_tokens() {
+auto Scanner::scan_tokens() -> std::vector<Token> {
   while (!isAtEnd()) {
     // We are at the beginning of the next lexeme.
     start = current;
@@ -21,18 +21,18 @@ std::vector<Token> Scanner::scan_tokens() {
   return tokens;
 }
 
-bool Scanner::isAtEnd() { return current >= source.length(); }
+auto Scanner::isAtEnd() -> bool { return current >= source.length(); }
 
-char Scanner::advance() { return source.at(current++); }
+auto Scanner::advance() -> char { return source.at(current++); }
 
-void Scanner::addToken(TokenType type, Literal literal) {
+void Scanner::addToken(TokenType type, const Literal& literal) {
   auto text = source.substr(start, current - start);
   tokens.emplace_back(type, text, literal, line);
 }
 
 void Scanner::addToken(TokenType type) { addToken(type, std::nullopt); }
 
-bool Scanner::match(char expected) {
+auto Scanner::match(char expected) -> bool {
   if (isAtEnd()) return false;
   if (source.at(current) != expected) return false;
 
@@ -40,7 +40,7 @@ bool Scanner::match(char expected) {
   return true;
 }
 
-char Scanner::peek() {
+auto Scanner::peek() -> char {
   if (isAtEnd()) return '\0';
   return source.at(current);
 }
@@ -66,20 +66,20 @@ void Scanner::string() {
   addToken(TokenType::STRING, value);
 }
 
-char Scanner::peekNext() {
+auto Scanner::peekNext() -> char {
   if (current + 1 >= source.length()) return '\0';
   return source.at(current + 1);
 }
 
 void Scanner::number() {
-  while (isdigit(peek())) advance();
+  while (isdigit(peek()) != 0) advance();
 
   // Look for a fractional part.
-  if (peek() == '.' && isdigit(peekNext())) {
+  if (peek() == '.' && (isdigit(peekNext()) != 0)) {
     // Consume the "."
     advance();
 
-    while (isdigit(peek())) advance();
+    while (isdigit(peek()) != 0) advance();
   }
   auto str = source.substr(start, current - start);
   bool error = false;
@@ -109,7 +109,7 @@ void Scanner::number() {
 }
 
 void Scanner::identifier() {
-  while (isalnum(peek())) advance();
+  while (isalnum(peek()) != 0) advance();
 
   std::string text = source.substr(start, current - start);
 
@@ -208,9 +208,9 @@ void Scanner::scanToken() {
       string();
       break;
     default:
-      if (isdigit(c)) {
+      if (isdigit(c) != 0) {
         number();
-      } else if (isalpha(c)) {
+      } else if (isalpha(c) != 0) {
         identifier();
       } else {
         status_log << "[line " << line << "] Error"

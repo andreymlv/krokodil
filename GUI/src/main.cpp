@@ -20,15 +20,15 @@
 
 namespace {
 
-static std::string source_code = "Drag and drop source code file";
+std::string source_code = "Drag and drop source code file";
 
-static std::string status_log = "Log will be here";
+std::string status_log = "Log will be here";
 
-static void glfw_error_callback(int error, const char* description) {
+void glfw_error_callback(int error, const char* description) {
   fprintf(stderr, "GLFW Error %d: %s\n", error, description);
 }
 
-static void drop_callback(GLFWwindow* window, int count, const char** paths) {
+void drop_callback(GLFWwindow* window, int count, const char** paths) {
   if (count != 1) {
     return;
   }
@@ -39,9 +39,9 @@ static void drop_callback(GLFWwindow* window, int count, const char** paths) {
 
 }  // namespace
 
-int main(int, char**) {
+auto main() -> int {
   glfwSetErrorCallback(glfw_error_callback);
-  if (!glfwInit()) return 1;
+  if (glfwInit() == 0) return 1;
 
 #if defined(IMGUI_IMPL_OPENGL_ES2)
   const char* glsl_version = "#version 100";
@@ -60,11 +60,11 @@ int main(int, char**) {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
 #endif
-  // TODO: Check on windows transparency
+  // TODO(andreymlv): Check on windows transparency
   // glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
 
-  GLFWwindow* window = glfwCreateWindow(
-      1280, 720, "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
+  auto *window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example",
+                                 nullptr, nullptr);
   if (window == nullptr) return 1;
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1);  // Enable vsync
@@ -85,9 +85,9 @@ int main(int, char**) {
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init(glsl_version);
 
-  ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+  ImVec4 clear_color = ImVec4(0.45F, 0.55F, 0.60F, 1.00F);
 
-  while (!glfwWindowShouldClose(window)) {
+  while (glfwWindowShouldClose(window) == 0) {
     glfwPollEvents();
 
     ImGui_ImplOpenGL3_NewFrame();

@@ -52,4 +52,4 @@ enum class TokenType {
   EndOfFile,
 };
 
-}
+}  // namespace Krokodil

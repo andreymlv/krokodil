@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-int main(int argc, char** argv) {
+auto main(int argc, char** argv) -> int {
   if (argc == 1) {
     std::cerr << "Usage: " << argv[0] << " <scripts>";
     return 1;

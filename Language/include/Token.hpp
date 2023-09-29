@@ -11,16 +11,16 @@ namespace Krokodil {
 
 using Literal = std::optional<std::variant<float, int, std::string>>;
 
-bool compare(const Literal& lhs, const Literal& rhs);
+auto compare(const Literal& lhs, const Literal& rhs) -> bool;
 
 struct Token {
   Token(TokenType type, std::string lexeme, Literal literal, int line);
 
-  bool operator==(const Token& rhs) const;
+  auto operator==(const Token& rhs) const -> bool;
 
-  bool operator!=(const Token& rhs) const;
+  auto operator!=(const Token& rhs) const -> bool;
 
-  friend std::ostream& operator<<(std::ostream& os, const Token& token);
+  friend auto operator<<(std::ostream& os, const Token& token) -> std::ostream&;
 
   Literal literal;
   TokenType type;
@@ -28,6 +28,6 @@ struct Token {
   std::string lexeme;
 };
 
-std::ostream& operator<<(std::ostream& os, const Token& t);
+auto operator<<(std::ostream& os, const Token& t) -> std::ostream&;
 
 }  // namespace Krokodil

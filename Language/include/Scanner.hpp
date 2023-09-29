@@ -30,7 +30,7 @@ class Scanner {
    *
    * @return A vector of tokens representing the scanned input source code.
    */
-  std::vector<Token> scan_tokens();
+  auto scan_tokens() -> std::vector<Token>;
 
  protected:
   /**
@@ -40,7 +40,7 @@ class Scanner {
    * @return Returns true if the current position is at or beyond the end of the
    * source, otherwise returns false.
    */
-  bool isAtEnd();
+  auto isAtEnd() -> bool;
 
   /**
    * @brief Advances to the next character in the source.
@@ -50,7 +50,7 @@ class Scanner {
    * @throws `std::out_of_range` if the current position is out of bounds of the
    * source.
    */
-  char advance();
+  auto advance() -> char;
 
   /**
    * @brief Adds a token to the list of tokens.
@@ -58,7 +58,7 @@ class Scanner {
    * @param[in] type The type of the token to be added.
    * @param[in] literal The literal value of the token to be added.
    */
-  void addToken(TokenType type, Literal literal);
+  void addToken(TokenType type, const Literal& literal);
 
   /**
    * @brief Adds a token to the list of tokens without a literal value.
@@ -76,7 +76,7 @@ class Scanner {
    * @return Returns true if the current character matches the expected
    * character, otherwise returns false.
    */
-  bool match(char expected);
+  auto match(char expected) -> bool;
 
   /**
    * @brief Peeks at the current character in the source without advancing.
@@ -84,7 +84,7 @@ class Scanner {
    * @return Returns the character at the current position in the source, or a
    * null character if we are at the end of the source.
    */
-  char peek();
+  auto peek() -> char;
 
   /**
    * @brief Processes a string in the source.
@@ -98,7 +98,7 @@ class Scanner {
    * @return Returns the character at the next position in the source, or a null
    * character if we are at or near the end of the source.
    */
-  char peekNext();
+  auto peekNext() -> char;
 
   /**
    * @brief Processes a number in the source.

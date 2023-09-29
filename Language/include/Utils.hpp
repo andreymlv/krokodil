@@ -3,12 +3,13 @@
 #include <charconv>
 #include <cstring>
 #include <fstream>
+#include <utility>
 
 #include "Scanner.hpp"
 
 namespace Krokodil {
 
-inline std::string read_all(const std::string &path) {
+inline auto read_all(const std::string &path) -> std::string {
   std::ifstream stream(path);
   std::string line;
   std::stringstream lines;
@@ -18,8 +19,8 @@ inline std::string read_all(const std::string &path) {
   return lines.str();
 }
 
-inline std::string compile(std::string lines) {
-  Scanner scanner(lines);
+inline auto compile(std::string lines) -> std::string {
+  Scanner scanner(std::move(lines));
   auto tokens = scanner.scan_tokens();
   std::stringstream stream;
   stream << scanner.status_log.str();
@@ -29,7 +30,7 @@ inline std::string compile(std::string lines) {
   return stream.str();
 }
 
-inline std::optional<int> to_int(std::string s) {
+inline auto to_int(std::string s) -> std::optional<int> {
   int value{};
   auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), value);
 
@@ -46,7 +47,7 @@ inline std::optional<int> to_int(std::string s) {
   return value;
 }
 
-inline std::optional<float> to_float(std::string s) {
+inline auto to_float(std::string s) -> std::optional<float> {
   float value{};
   auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), value);
 
