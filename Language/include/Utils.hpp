@@ -5,7 +5,14 @@
 #include <fstream>
 #include <utility>
 
+#include "Generator.hpp"
+#include "Parser.hpp"
 #include "Scanner.hpp"
+
+#ifndef WIN32
+#include <cstdlib>
+#else
+#endif  // !WIN32
 
 namespace Krokodil {
 
@@ -27,6 +34,20 @@ inline auto compile(std::string lines) -> std::string {
   for (const auto &token : tokens) {
     stream << token << std::endl;
   }
+  Parser parser(std::move(tokens));
+  auto ast = parser.program();
+  stream << std::setw(2) << ast << std::endl;
+  Generator generator(std::move(ast));
+  generator.generate("out.s");
+
+#ifndef WIN32
+  if (system("gcc out.s") != 0) {
+    std::cerr << strerror(errno) << std::endl;
+  }
+#else
+  // Call mingw gcc in windows
+#endif  // !WIN32
+
   return stream.str();
 }
 
