@@ -41,7 +41,10 @@ inline auto compile(std::string lines) -> std::string {
   generator.generate("out.s");
 
 #ifndef WIN32
-  if (system("gcc out.s") != 0) {
+  if (system("gcc -no-pie out.s") != 0) {
+    std::cerr << strerror(errno) << std::endl;
+  }
+  if (system("./a.out") != 0) {
     std::cerr << strerror(errno) << std::endl;
   }
 #else
